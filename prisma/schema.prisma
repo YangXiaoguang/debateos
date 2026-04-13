@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole { user admin }
+enum AgentStatus { active archived disabled }
+enum TopicStatus { draft ready archived }
+enum SessionStatus { draft ready running paused completed aborted failed }
+enum ParticipantState { pending active speaking waiting conceded stopped errored }
+enum RoundPhase { opening critique rebuttal final judging closed }
+enum RoundStatus { pending running completed failed }
+enum TurnStatus { pending streaming completed failed }
+enum TopicMode { hybrid knockout score synthesis }
+enum WinnerRule { hybrid last_active judge_score user_vote }
+enum ArtifactType { winner_report judge_report argument_map session_summary export_json export_markdown }
+enum EventType {
+  TOPIC_CREATED
+  AGENT_SELECTED
+  DEBATE_STARTED
+  ROUND_STARTED
+  TURN_STARTED
+  TURN_STREAM_DELTA
+  TURN_COMPLETED
+  AGENT_CONCEDED
+  ROUND_COMPLETED
+  SESSION_PAUSED
+  SESSION_RESUMED
+  SESSION_ABORTED
+  JUDGE_SCORED
+  WINNER_DECIDED
+  SESSION_COMPLETED
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  email     String   @unique @db.VarChar(255)
+  name      String?  @db.VarChar(100)
+  avatarUrl String?
+  role      UserRole @default(user)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents   Agent[]
+  topics   Topic[]
+  sessions DebateSession[]
+
+  @@map("users")
+}
+
+model SystemModel {
+  id          String   @id @default(uuid()) @db.Uuid
+  provider    String   @db.VarChar(50)
+  modelName   String   @db.VarChar(120)
+  displayName String   @db.VarChar(120)
+  isActive    Boolean  @default(true)
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  agents Agent[]
+
+  @@map("system_models")
+}
+
+model Agent {
+  id           String       @id @default(uuid()) @db.Uuid
+  ownerUserId  String       @db.Uuid
+  name         String       @db.VarChar(100)
+  description  String?
+  avatarUrl    String?
+  modelId      String?      @db.Uuid
+  systemPrompt String
+  stylePrompt  String?
+  stanceTags   Json?
+  capabilities Json?
+  temperature  Decimal?     @default("0.70") @db.Decimal(3,2)
+  maxTokens    Int?
+  status       AgentStatus  @default(active)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  owner        User         @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  model        SystemModel? @relation(fields: [modelId], references: [id], onDelete: SetNull)
+
+  @@map("agents")
+}
+
+model Topic {
+  id                 String      @id @default(uuid()) @db.Uuid
+  ownerUserId        String      @db.Uuid
+  title              String      @db.VarChar(255)
+  description        String
+  extraContext       String?
+  mode               TopicMode   @default(hybrid)
+  maxRounds          Int         @default(3)
+  outputRequirements String?
+  winnerRule         WinnerRule  @default(hybrid)
+  metadata           Json?
+  status             TopicStatus @default(draft)
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+
+  owner              User        @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  attachments        TopicAttachment[]
+  sessions           DebateSession[]
+
+  @@map("topics")
+}
+
+model TopicAttachment {
+  id            String   @id @default(uuid()) @db.Uuid
+  topicId       String   @db.Uuid
+  fileName      String   @db.VarChar(255)
+  fileType      String?  @db.VarChar(100)
+  fileSize      Int?
+  fileUrl       String
+  extractedText String?
+  metadata      Json?
+  createdAt     DateTime @default(now())
+
+  topic         Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@map("topic_attachments")
+}
+
+model DebateSession {
+  id             String         @id @default(uuid()) @db.Uuid
+  topicId        String         @db.Uuid
+  ownerUserId    String         @db.Uuid
+  status         SessionStatus  @default(draft)
+  currentRoundNo Int            @default(0)
+  currentPhase   RoundPhase?
+  winnerAgentId  String?        @db.Uuid
+  startedAt      DateTime?
+  pausedAt       DateTime?
+  completedAt    DateTime?
+  abortedAt      DateTime?
+  lastCheckpoint Json?
+  summary        String?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  topic          Topic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  owner          User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@map("debate_sessions")
+}
