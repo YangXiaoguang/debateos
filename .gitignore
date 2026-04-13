@@ -7,3 +7,6 @@ coverage
 .env.local
 drizzle/meta
 npm-debug.log*
+.cache
+public/uploads
+*.tsbuildinfo
