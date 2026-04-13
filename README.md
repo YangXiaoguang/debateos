@@ -23,7 +23,7 @@ A structured deliberation platform where customizable AI agents engage in multi-
 - `src/types/domain.ts`：核心领域类型
 - `src/app/debates/[id]/page.tsx`：讨论页骨架
 
-## 建议技术路线
+## 技术路线
 
 - Next.js App Router
 - PostgreSQL
@@ -146,4 +146,4 @@ npm run dev
 - `GET /api/v1/debates/:id/result`
 - `POST /api/v1/turns/:turnId/favorite`
 
-admin@debateos.local / debateos123
+## 默认管理员账号密码： admin@debateos.local / debateos123
