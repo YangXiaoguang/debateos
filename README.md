@@ -1,6 +1,12 @@
-# DebateOS
+# DebateOS 
+```
+ 多 AI Agent 议题辩论与裁决平台
+让多个可自定义的 AI Agent 围绕同一议题展开真实、多轮、结构化的讨论与交锋。它不只是生成多个答案，而是通过批判、回应、修正与裁决，帮助用户更快找到更优结论。
+适用于技术评审、产品决策、战略分析、创意竞争等复杂场景。
 
-这是 DebateOS 的当前工作目录，项目已经从 `debateos-codex-starter` 整体迁移到了 `debateos` 根目录，并继续在 `Next.js + TypeScript + PostgreSQL + Drizzle` 路线上演进。
+Multi-AI Agent Debate & Adjudication System
+A structured deliberation platform where customizable AI agents engage in multi-round discussions around the same topic. Instead of producing isolated answers, the system drives critique, rebuttal, refinement, and final adjudication — helping users reach stronger conclusions faster. Ideal for technical reviews, product decisions, strategic analysis, and creative competitions.
+```
 
 ## 包含内容
 
